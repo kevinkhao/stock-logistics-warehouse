@@ -5,9 +5,9 @@
     "version": "12.0.1.0.0",
     "category": "Inventory",
     "website": "https://github.com/OCA/stock-logistics-warehouse",
-    "author": "Akretion"
-    "Odoo Community Association (OCA)",
+    "author": "Akretion" "Odoo Community Association (OCA)",
     "license": "AGPL-3",
     "depends": ["stock"],
-    "data": ["views/product.xml", ],
+    "data": ["views/product.xml"],
+    "maintainers": ["kevinkhao", "sebastienbeau"],
 }

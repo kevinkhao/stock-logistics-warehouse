@@ -14,8 +14,12 @@ class TestProductPutaway(TransactionCase):
         )
         self.product_product_chair = ref("product.product_product_11")
         self.location_chicago_stock = ref("stock.stock_location_shop0")
+        self.location_base_stock = ref("stock.stock_location_stock")
         self.category_furniture = ref("product.product_category_5")
+        self.category_saleable = ref("product.product_category_1")
+        self.category_all = ref("product.product_category_all")
         self.category_services = ref("product.product_category_3")
+        # simplest case : product_id or category_id directly corresponds
         self.putaway_strat_1 = self.putawayObj.create(
             {"name": "Putaway Strategy 1"}
         )
@@ -33,6 +37,24 @@ class TestProductPutaway(TransactionCase):
                 "fixed_location_id": self.location_chicago_stock.id,
             }
         )
+        # case with inherited categories
+        self.putaway_strat_2 = self.putawayObj.create(
+            {"name": "Putaway Strategy 2"}
+        )
+        self.putaway_line_3 = self.putawayLineObj.create(
+            {
+                "category_id": self.category_saleable.id,
+                "putaway_id": self.putaway_strat_2.id,
+                "fixed_location_id": self.location_base_stock.id,
+            }
+        )
+        self.putaway_line_4 = self.putawayLineObj.create(
+            {
+                "category_id": self.category_all.id,
+                "putaway_id": self.putaway_strat_2.id,
+                "fixed_location_id": self.location_base_stock.id,
+            }
+        )
 
     def test_tmpl_has_putaways_from_products(self):
         self.assertIn(
@@ -40,12 +62,13 @@ class TestProductPutaway(TransactionCase):
             self.product_tmpl_chair.product_tmpl_putaway_ids,
         )
         self.putaway_line_1.product_id = self.env["product.product"]
+        self.env["product.template"].invalidate_cache()
         self.assertNotIn(
             self.putaway_line_1,
             self.product_tmpl_chair.product_tmpl_putaway_ids,
         )
 
-    def test_tmpl_has_putaways_from_category(self):
+    def test_tmpl_has_putaways_from_category_simple(self):
         self.assertIn(
             self.putaway_line_2,
             self.product_tmpl_chair.product_putaway_categ_ids,
@@ -53,5 +76,16 @@ class TestProductPutaway(TransactionCase):
         self.product_tmpl_chair.categ_id = self.category_services
         self.assertNotIn(
             self.putaway_line_2,
+            self.product_tmpl_chair.product_putaway_categ_ids,
+        )
+
+    def test_tmpl_has_putaways_from_category_parent(self):
+        # chair is under category: all/saleable/office
+        self.assertIn(
+            self.putaway_line_3,
+            self.product_tmpl_chair.product_putaway_categ_ids,
+        )
+        self.assertNotIn(
+            self.putaway_line_4,
             self.product_tmpl_chair.product_putaway_categ_ids,
         )
